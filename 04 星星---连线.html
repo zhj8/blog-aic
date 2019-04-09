@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		body, html {
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+		}
+		canvas {
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="myCanvas"></canvas>
+	<script type="text/javascript">
+		// 获取元素
+		var myCanvas = document.getElementById("myCanvas");
+		// 画笔
+		var ctx = myCanvas.getContext("2d");
+		// 备份宽度
+		var width = document.documentElement.clientWidth;
+		// 备份高度
+		var height = document.documentElement.clientHeight;
+		// 因为是全屏 所以将canvas的宽度高度设置为视口的宽度高度
+		// 获取视口宽高并设置canvas的宽高
+		myCanvas.width = width;
+		myCanvas.height = height;
+		// 更改填充色
+		ctx.fillStyle = "white";
+		// 更改描边色
+		ctx.strokeStyle = "white";
+		
+
+		// 我们现在想要绘制星星 
+		// 使用面向对象写法
+		var Star = function(x, y, x_speed, y_speed, r) {
+			this.x = x;
+			this.y = y;
+			this.x_speed = x_speed;
+			this.y_speed = y_speed;
+			this.r = r;
+		}
+		// 星星的方法
+		Star.prototype.move = function() {
+			this.x += this.x_speed;
+			this.y += this.y_speed;
+		}
+		// 折返方法 
+		Star.prototype.backX = function() {
+			this.x_speed = -this.x_speed;
+		}
+		// 另一个方向的折返
+		Star.prototype.backY = function() {
+			this.y_speed = -this.y_speed;
+		}
+		
+		// 初始化一个星星
+		var star = new Star(0, 0, 0, 0, 3);
+		// 添加鼠标移动事件
+		myCanvas.onmousemove = function(e) {
+			// 获取鼠标到视口的距离
+			var x = e.clientX;
+			var y = e.clientY;
+			star.x = x;
+			star.y = y;
+		}
+		// 添加鼠标点击事件
+		myCanvas.onclick = function(e) {
+			// 获取鼠标在视口中的位置
+			var x = e.clientX;
+			var y = e.clientY;
+			// 给数组新增5个star  因为下面的setInterval中主要在操作数组 所以新的星星放入数组之后会自动被渲染
+			for(var i = 0; i < 5; i++) {
+				arr.push(new Star(
+					x,
+					y, 
+					((Math.random() * 2).toFixed(1) + 1) * (Math.pow(-1, parseInt(Math.random() * 4))),
+					((Math.random() * 2).toFixed(1) + 1) * (Math.pow(-1, parseInt(Math.random() * 4))),
+					1)
+				)
+			}
+		}
+		// 定义一个数组 
+		var arr = [star];
+		// 循环生成星星实例放入数组
+		for(var i = 0; i < 20; i++) {
+			arr.push(new Star(parseInt(Math.random() * width), parseInt(Math.random() * height), (parseInt(Math.random() * 2) + 1) * (Math.pow(-1, parseInt(Math.random() * 4))), (parseInt(Math.random() * 2) + 1) * (Math.pow(-1, parseInt(Math.random() * 4))), 1));
+		}
+		// 定义星星连线间隔
+		var size = 100;
+	 	// 渲染星星
+	 	setInterval(function() {
+ 			// 清屏
+			ctx.clearRect(0, 0, 10000, 10000);
+			// 循环
+			for(var i = 0; i < arr.length; i++) {
+				// 开启路径
+				ctx.beginPath();
+				// 星星移动
+				arr[i].move();
+				// 检测是否越界
+				if(arr[i].x >= width || arr[i].x < 0) {
+					arr[i].backX();
+				}
+				if(arr[i].y >= height || arr[i].y < 0) {
+					arr[i].backY();
+				}
+				// 绘制
+				ctx.arc(arr[i].x, arr[i].y, arr[i].r, 0, Math.PI * 2, false);
+				// 闭合路径
+				ctx.closePath();
+				// 填充
+				ctx.fill();
+			}
+
+			// 循环 这次循环是用于绘制线的
+			for(var i = 0; i < arr.length; i++) {
+				// 得到每一个星星
+				var star = arr[i];
+				// 内层循环 让每一个星星都与其他点连线
+				for(var j = 0; j < arr.length; j++) {
+					// 获取第一个星星的x y点 star.x star.y
+					// 获取第二个星星的x y点 arr[j].x arr[j].y
+					// 加条件 如果两个点距离近了 才连线
+					if(Math.abs(star.x - arr[j].x) < size && Math.abs(star.y - arr[j].y) < size) {
+						drawLine(star.x, star.y, arr[j].x, arr[j].y, .2);
+					}
+				}
+			}
+	 	}, 20);
+
+	 	// 定义画线方法
+	 	function drawLine(x1, y1, x2, y2, lineWidth) {
+	 		// 开启路径
+	 		ctx.beginPath();
+	 		// 将画笔设定为某点
+	 		ctx.moveTo(x1, y1);
+	 		// 画到第二个点
+	 		ctx.lineTo(x2, y2);
+	 		// 闭合路径
+	 		ctx.closePath();
+	 		// 设置线宽
+	 		ctx.lineWidth = lineWidth;
+	 		// 绘制线
+	 		ctx.stroke();
+	 	}
+
+	</script>
+</body>
+</html>
